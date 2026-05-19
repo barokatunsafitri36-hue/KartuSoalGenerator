@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Kartu Soal</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f3f4f6;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            flex: 1;
+        }
+        .form-section, .preview-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h2 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        .form-row .form-group {
+            flex: 1;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        input[type="text"], textarea, select, input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #1d4ed8;
+        }
+        button.print-btn {
+            background-color: #16a34a;
+        }
+        button.print-btn:hover {
+            background-color: #15803d;
+        }
+        /* Style untuk Kartu Soal */
+        .kartu-soal {
+            border: 2px solid #000;
+            padding: 20px;
+            background: #fff;
+        }
+        .kartu-soal h3 {
+            text-align: center;
+            margin-top: 0;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+        .table-soal {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .table-soal th, .table-soal td {
+            border: 1px solid #000;
+            padding: 8px;
+            vertical-align: top;
+            font-size: 14px;
+        }
+        .header-cell {
+            background-color: #f9fafb;
+            width: 25%;
+        }
+        
+        /* Style untuk Footer Halaman */
+        footer {
+            text-align: center;
+            padding: 20px 0 10px 0;
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        /* Pengaturan Cetak (Print) */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .container {
+                display: block;
+            }
+            .form-section, footer {
+                display: none; /* Sembunyikan form dan footer saat dicetak */
+            }
+            .preview-section {
+                box-shadow: none;
+                padding: 0;
+            }
+            .kartu-soal {
+                border: none;
+                padding: 0;
+            }
+        }
+        
+        /* Layout khusus layar kecil */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="form-section">
+        <h2>📝 Input Data Soal</h2>
+        
+        <div class="form-group">
+            <label>Mata Pelajaran</label>
+            <input type="text" id="in-mapel" placeholder="Contoh: Bahasa Indonesia">
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Kelas / Fase</label>
+                <input type="text" id="in-kelas" placeholder="Contoh: VII / D">
+            </div>
+            <div class="form-group">
+                <label>Semester</label>
+                <input type="text" id="in-semester" placeholder="Contoh: Ganjil">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Penyusun Soal</label>
+            <input type="text" id="in-penyusun" placeholder="Nama Lengkap beserta Gelar">
+        </div>
+        <hr style="border: 0; border-top: 1px dashed #ccc; margin-bottom: 15px;">
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>No. Soal</label>
+                <input type="text" id="in-no" placeholder="Contoh: 1">
+            </div>
+            
+            <div class="form-group">
+                <label>Tipe Soal</label>
+                <select id="in-tipe">
+                    <option value="Pilihan Ganda">Pilihan Ganda</option>
+                    <option value="Pilihan Ganda Kompleks">Pilihan Ganda Kompleks</option>
+                    <option value="Uraian / Essay">Uraian / Essay</option>
+                    <option value="Isian Singkat">Isian Singkat</option>
+                    <option value="Benar / Salah">Benar / Salah</option>
+                    <option value="Menjodohkan">Menjodohkan</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>Tujuan Pembelajaran</label>
+            <textarea id="in-tujuan" placeholder="Peserta didik dapat..."></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label>Materi</label>
+            <input type="text" id="in-materi" placeholder="Masukkan materi pokok">
+        </div>
+        
+        <div class="form-group">
+            <label>Indikator Soal</label>
+            <textarea id="in-indikator" placeholder="Disajikan teks/gambar, peserta didik mampu..."></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label>Sumber Soal</label>
+            <input type="text" id="in-sumber" placeholder="Buku Paket X / Bank Soal dll">
+        </div>
+
+        <div class="form-group">
+            <label>Rumusan Soal (Teks)</label>
+            <textarea id="in-rumusan" style="min-height: 100px;" placeholder="Tuliskan soal di sini..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Gambar Soal (Opsional)</label>
+            <input type="file" id="in-gambar" accept="image/*">
+            <small style="color: #666; display: block; margin-top: 5px;">Pilih gambar dari komputer/laptop Anda (JPG/PNG).</small>
+        </div>
+        
+        <div class="form-group">
+            <label>Kunci Jawaban</label>
+            <textarea id="in-kunci" placeholder="Tuliskan kunci jawaban..."></textarea>
+        </div>
+        
+        <button type="button" onclick="generateKartu()">🔄 Generate Kartu Soal</button>
+        <button type="button" class="print-btn" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
+    </div>
+
+    <div class="preview-section">
+        <h2>📄 Preview Kartu Soal</h2>
+        
+        <div class="kartu-soal" id="kartu-output">
+            <h3>KARTU SOAL</h3>
+            <table class="table-soal">
+                <tr>
+                    <td class="header-cell"><strong>Mata Pelajaran</strong></td>
+                    <td colspan="3" id="out-mapel">-</td>
+                </tr>
+                <tr>
+                    <td class="header-cell"><strong>Kelas / Fase</strong></td>
+                    <td id="out-kelas" style="width: 25%;">-</td>
+                    <td class="header-cell"><strong>Semester</strong></td>
+                    <td id="out-semester">-</td>
+                </tr>
+                <tr>
+                    <td class="header-cell"><strong>Penyusun Soal</strong></td>
+                    <td colspan="3" id="out-penyusun">-</td>
+                </tr>
+                <tr>
+                    <td class="header-cell"><strong>Tujuan Pembelajaran</strong></td>
+                    <td colspan="3" id="out-tujuan">-</td>
+                </tr>
+                <tr>
+                    <td class="header-cell"><strong>Materi</strong></td>
+                    <td colspan="3" id="out-materi">-</td>
+                </tr>
+                <tr>
+                    <td class="header-cell"><strong>Indikator Soal</strong></td>
+                    <td colspan="3" id="out-indikator">-</td>
+                </tr>
+                <tr>
+                    <td class="header-cell"><strong>No. Soal</strong></td>
+                    <td id="out-no">-</td>
+                    <td class="header-cell"><strong>Tipe Soal</strong></td>
+                    <td id="out-tipe">-</td>
+                </tr>
+                <tr>
+                    <td class="header-cell"><strong>Sumber Soal</strong></td>
+                    <td colspan="3" id="out-sumber">-</td>
+                </tr>
+                <tr>
+                    <td colspan="4">
+                        <strong>Rumusan Soal:</strong><br><br>
+                        <div id="out-rumusan" style="white-space: pre-wrap;">-</div>
+                        <div style="text-align: center; margin-top: 15px;">
+                            <img id="out-gambar" src="" alt="Gambar Soal" style="max-width: 90%; max-height: 300px; display: none; margin: auto;">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="4">
+                        <strong>Kunci Jawaban:</strong><br><br>
+                        <div id="out-kunci" style="white-space: pre-wrap; font-weight: bold;">-</div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+<footer>
+    @copyright by barokatunsafitri 2026
+</footer>
+
+<script>
+    function generateKartu() {
+        document.getElementById('out-mapel').innerText = document.getElementById('in-mapel').value || '-';
+        document.getElementById('out-kelas').innerText = document.getElementById('in-kelas').value || '-';
+        document.getElementById('out-semester').innerText = document.getElementById('in-semester').value || '-';
+        document.getElementById('out-penyusun').innerText = document.getElementById('in-penyusun').value || '-';
+        
+        document.getElementById('out-no').innerText = document.getElementById('in-no').value || '-';
+        document.getElementById('out-tipe').innerText = document.getElementById('in-tipe').value || '-';
+        document.getElementById('out-tujuan').innerText = document.getElementById('in-tujuan').value || '-';
+        document.getElementById('out-materi').innerText = document.getElementById('in-materi').value || '-';
+        document.getElementById('out-indikator').innerText = document.getElementById('in-indikator').value || '-';
+        document.getElementById('out-sumber').innerText = document.getElementById('in-sumber').value || '-';
+        document.getElementById('out-rumusan').innerText = document.getElementById('in-rumusan').value || '-';
+        document.getElementById('out-kunci').innerText = document.getElementById('in-kunci').value || '-';
+    }
+
+    const inputs = document.querySelectorAll('input[type="text"], textarea, select');
+    inputs.forEach(input => {
+        input.addEventListener('input', generateKartu);
+    });
+
+    document.getElementById('in-gambar').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        const outGambar = document.getElementById('out-gambar');
+        
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                outGambar.src = e.target.result;
+                outGambar.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        } else {
+            outGambar.src = '';
+            outGambar.style.display = 'none';
+        }
+    });
+</script>
+
+</body>
+</html>
